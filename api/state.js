@@ -95,6 +95,7 @@ module.exports = async function handler(req, res) {
       "start",
       "pause",
       "reset_timer",
+      "add_time",
       "increment_mission",
       "decrement_mission",
       "reset_missions",
@@ -106,6 +107,9 @@ module.exports = async function handler(req, res) {
     if (body.action === "set_mission_total"
         && (!Number.isInteger(body.value) || body.value < 1 || body.value > 999)) {
       return sendError(res, 400, "A meta de missões deve ser um número inteiro entre 1 e 999.");
+    }
+    if (body.action === "add_time" && ![600, 1800, 3600].includes(body.value)) {
+      return sendError(res, 400, "O tempo adicionado deve ser 10, 30 ou 60 minutos.");
     }
 
     const rows = await supabaseRequest("rpc/apply_overlay_action", {

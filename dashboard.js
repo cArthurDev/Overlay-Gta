@@ -24,11 +24,17 @@ const previewTime = document.querySelector("#preview-time");
 const decrementMissionButton = document.querySelector("#decrement-mission");
 const incrementMissionButton = document.querySelector("#increment-mission");
 const resetTimerButton = document.querySelector("#reset-timer");
+const add10MinutesButton = document.querySelector("#add-10-min");
+const add30MinutesButton = document.querySelector("#add-30-min");
+const add1HourButton = document.querySelector("#add-1-hour");
 const resetMissionsButton = document.querySelector("#reset-missions");
 const saveMissionTotalButton = document.querySelector("#mission-total-form button");
 const actionButtons = [
   toggleTimerButton,
   resetTimerButton,
+  add10MinutesButton,
+  add30MinutesButton,
+  add1HourButton,
   decrementMissionButton,
   incrementMissionButton,
   resetMissionsButton,
@@ -200,6 +206,10 @@ toggleTimerButton.addEventListener("click", () => {
 document.querySelector("#reset-timer").addEventListener("click", () => {
   if (window.confirm("Zerar todo o tempo jogado?")) postAction("reset_timer");
 });
+
+add10MinutesButton.addEventListener("click", () => postAction("add_time", 600));
+add30MinutesButton.addEventListener("click", () => postAction("add_time", 1800));
+add1HourButton.addEventListener("click", () => postAction("add_time", 3600));
 
 document.querySelector("#increment-mission").addEventListener("click", () => postAction("increment_mission"));
 document.querySelector("#decrement-mission").addEventListener("click", () => postAction("decrement_mission"));

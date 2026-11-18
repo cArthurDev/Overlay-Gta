@@ -10,6 +10,8 @@ Painel web e overlay transparente para controlar o contador de missões e o temp
 2. Abra **SQL Editor**, cole o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql) e execute.
 3. Em **Project Settings → API Keys**, copie a URL do projeto e crie/ copie uma chave **Secret** (`sb_secret_...`). Ela ignora as políticas RLS; mantenha-a somente no servidor, como variável de ambiente da Vercel. O nome antigo `service_role` também é aceito.
 
+Se já configurou o banco anteriormente, execute novamente o SQL atualizado para habilitar as ações de adicionar tempo ao cronômetro. A criação da tabela e do estado inicial é idempotente.
+
 ### 2. Publicar o projeto
 
 Importe este repositório na Vercel. O projeto é estático e a pasta `api` contém a função serverless; não é necessário configurar comando de build.

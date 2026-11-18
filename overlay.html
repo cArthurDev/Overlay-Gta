@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Overlay GTA VI</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="overlay-page">
+    <main class="overlay-root" aria-label="Progresso da transmissão">
+      <section class="overlay-cell mission-cell" aria-label="Missões concluídas">
+        <span class="overlay-label">MISSÕES</span>
+        <span id="overlay-missions" class="overlay-value mission-value" aria-live="polite">00<span class="overlay-total">/23</span></span>
+      </section>
+      <section class="overlay-cell time-cell" aria-label="Tempo total jogado">
+        <span class="overlay-label">TEMPO TOTAL</span>
+        <span id="overlay-time" class="overlay-value" aria-live="off">00:00:00</span>
+      </section>
+      <p id="overlay-error" class="overlay-error" role="status" hidden></p>
+    </main>
+    <script src="/overlay.js" defer></script>
+  </body>
+</html>

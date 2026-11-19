@@ -11,6 +11,21 @@ if (/^#[0-9a-f]{6}$/i.test(requestedTextColor || "")) {
   document.documentElement.style.setProperty("--overlay-text", requestedTextColor);
 }
 
+const overlayParams = new URL(window.location.href).searchParams;
+const requestedGradientEnabled = overlayParams.get("textGradient") === "true";
+const requestedGradientStart = overlayParams.get("gradientStart");
+const requestedGradientEnd = overlayParams.get("gradientEnd");
+
+if (requestedGradientEnabled) {
+  if (/^#[0-9a-f]{6}$/i.test(requestedGradientStart || "")) {
+    document.documentElement.style.setProperty("--overlay-gradient-start", requestedGradientStart);
+  }
+  if (/^#[0-9a-f]{6}$/i.test(requestedGradientEnd || "")) {
+    document.documentElement.style.setProperty("--overlay-gradient-end", requestedGradientEnd);
+  }
+  document.documentElement.classList.add("overlay-gradient");
+}
+
 function formatTime(seconds) {
   const safeSeconds = Math.max(0, Math.floor(seconds));
   const hours = Math.floor(safeSeconds / 3600);

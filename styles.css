@@ -12,6 +12,8 @@
   --acid: #b6f36b;
   --acid-ink: #17200f;
   --overlay-text: #ffffff;
+  --overlay-gradient-start: #b6f36b;
+  --overlay-gradient-end: #ffffff;
   --error: #ff8d8d;
   --space: 8px;
   font-family: "Arial Narrow", "Roboto Condensed", "Segoe UI", sans-serif;
@@ -235,6 +237,22 @@ h2 {
   gap: 8px;
 }
 
+.gradient-toggle {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.gradient-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--acid);
+}
+
 .color-control input[type="color"] {
   width: 44px;
   height: 40px;
@@ -257,6 +275,17 @@ h2 {
 
 .color-control .button {
   min-height: 40px;
+}
+
+.overlay-gradient .overlay-label,
+.overlay-gradient .overlay-value,
+.overlay-gradient .overlay-total,
+.overlay-gradient .mission-value {
+  background: linear-gradient(90deg, var(--overlay-gradient-start), var(--overlay-gradient-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 .live-status {

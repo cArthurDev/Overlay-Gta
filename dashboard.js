@@ -1,6 +1,11 @@
 const STORAGE_KEY = "vice-city-overlay-secret";
 const TEXT_COLOR_KEY = "vice-city-overlay-text-color";
+const GRADIENT_ENABLED_KEY = "vice-city-overlay-gradient-enabled";
+const GRADIENT_START_KEY = "vice-city-overlay-gradient-start";
+const GRADIENT_END_KEY = "vice-city-overlay-gradient-end";
 const DEFAULT_TEXT_COLOR = "#ffffff";
+const DEFAULT_GRADIENT_START = "#b6f36b";
+const DEFAULT_GRADIENT_END = "#ffffff";
 const SYNC_INTERVAL = 3000;
 
 const connectView = document.querySelector("#connect-view");
@@ -34,6 +39,9 @@ const saveMissionTotalButton = document.querySelector("#mission-total-form butto
 const textColorInput = document.querySelector("#text-color");
 const textColorValue = document.querySelector("#text-color-value");
 const resetTextColorButton = document.querySelector("#reset-text-color");
+const gradientEnabledInput = document.querySelector("#gradient-enabled");
+const gradientStartInput = document.querySelector("#gradient-start");
+const gradientEndInput = document.querySelector("#gradient-end");
 const actionButtons = [
   toggleTimerButton,
   resetTimerButton,
@@ -48,6 +56,9 @@ const actionButtons = [
 
 let secret = localStorage.getItem(STORAGE_KEY) || "";
 let overlayTextColor = localStorage.getItem(TEXT_COLOR_KEY) || DEFAULT_TEXT_COLOR;
+let gradientEnabled = localStorage.getItem(GRADIENT_ENABLED_KEY) === "true";
+let gradientStart = localStorage.getItem(GRADIENT_START_KEY) || DEFAULT_GRADIENT_START;
+let gradientEnd = localStorage.getItem(GRADIENT_END_KEY) || DEFAULT_GRADIENT_END;
 let state = null;
 let requestInFlight = false;
 
@@ -58,13 +69,33 @@ function isHexColor(value) {
 function applyOverlayTextColor(color) {
   const safeColor = isHexColor(color) ? color : DEFAULT_TEXT_COLOR;
   overlayTextColor = safeColor;
-  document.documentElement.style.setProperty("--overlay-text", safeColor);
   textColorInput.value = safeColor;
-  textColorValue.textContent = safeColor.toUpperCase();
   localStorage.setItem(TEXT_COLOR_KEY, safeColor);
+  applyOverlayAppearance();
 }
 
-applyOverlayTextColor(overlayTextColor);
+function applyOverlayAppearance() {
+  const root = document.documentElement;
+  root.style.setProperty("--overlay-text", overlayTextColor);
+  root.style.setProperty("--overlay-gradient-start", gradientStart);
+  root.style.setProperty("--overlay-gradient-end", gradientEnd);
+  root.classList.toggle("overlay-gradient", gradientEnabled);
+  textColorInput.hidden = gradientEnabled;
+  gradientStartInput.hidden = !gradientEnabled;
+  gradientEndInput.hidden = !gradientEnabled;
+  textColorValue.textContent = gradientEnabled
+    ? `DEGRADE · ${gradientStart.toUpperCase()} → ${gradientEnd.toUpperCase()}`
+    : `COR SÓLIDA · ${overlayTextColor.toUpperCase()}`;
+  textColorInput.value = overlayTextColor;
+  gradientStartInput.value = gradientStart;
+  gradientEndInput.value = gradientEnd;
+  gradientEnabledInput.checked = gradientEnabled;
+  localStorage.setItem(GRADIENT_ENABLED_KEY, String(gradientEnabled));
+  localStorage.setItem(GRADIENT_START_KEY, gradientStart);
+  localStorage.setItem(GRADIENT_END_KEY, gradientEnd);
+}
+
+applyOverlayAppearance();
 
 function formatTime(seconds) {
   const safeSeconds = Math.max(0, Math.floor(seconds));
@@ -141,6 +172,9 @@ async function requestState() {
 function overlayAddress() {
   const url = new URL("/overlay.html", window.location.origin);
   url.searchParams.set("textColor", overlayTextColor);
+  url.searchParams.set("textGradient", String(gradientEnabled));
+  url.searchParams.set("gradientStart", gradientStart);
+  url.searchParams.set("gradientEnd", gradientEnd);
   url.hash = secret;
   return url.toString();
 }
@@ -247,7 +281,36 @@ textColorInput.addEventListener("input", (event) => {
   }
 });
 
+gradientEnabledInput.addEventListener("change", (event) => {
+  gradientEnabled = event.target.checked;
+  applyOverlayAppearance();
+  if (overlayUrl.textContent !== "A URL privada aparece depois de conectar.") {
+    overlayUrl.textContent = overlayAddress();
+  }
+});
+
+gradientStartInput.addEventListener("input", (event) => {
+  if (!isHexColor(event.target.value)) return;
+  gradientStart = event.target.value;
+  applyOverlayAppearance();
+  if (overlayUrl.textContent !== "A URL privada aparece depois de conectar.") {
+    overlayUrl.textContent = overlayAddress();
+  }
+});
+
+gradientEndInput.addEventListener("input", (event) => {
+  if (!isHexColor(event.target.value)) return;
+  gradientEnd = event.target.value;
+  applyOverlayAppearance();
+  if (overlayUrl.textContent !== "A URL privada aparece depois de conectar.") {
+    overlayUrl.textContent = overlayAddress();
+  }
+});
+
 resetTextColorButton.addEventListener("click", () => {
+  gradientEnabled = false;
+  gradientStart = DEFAULT_GRADIENT_START;
+  gradientEnd = DEFAULT_GRADIENT_END;
   applyOverlayTextColor(DEFAULT_TEXT_COLOR);
   if (overlayUrl.textContent !== "A URL privada aparece depois de conectar.") {
     overlayUrl.textContent = overlayAddress();

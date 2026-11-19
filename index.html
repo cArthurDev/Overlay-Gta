@@ -67,10 +67,16 @@
               <div class="overlay-appearance">
                 <div>
                   <span class="appearance-label">COR DAS LETRAS</span>
-                  <span id="text-color-value" class="appearance-value">#FFFFFF</span>
+                  <span id="text-color-value" class="appearance-value">COR SÓLIDA · #FFFFFF</span>
                 </div>
                 <div class="color-control">
+                  <label class="gradient-toggle">
+                    <input id="gradient-enabled" type="checkbox">
+                    <span>Degradê</span>
+                  </label>
                   <input id="text-color" type="color" value="#ffffff" aria-label="Cor das letras da overlay">
+                  <input id="gradient-start" type="color" value="#b6f36b" aria-label="Primeira cor do degradê" hidden>
+                  <input id="gradient-end" type="color" value="#ffffff" aria-label="Segunda cor do degradê" hidden>
                   <button id="reset-text-color" class="button button-quiet" type="button">Restaurar</button>
                 </div>
               </div>

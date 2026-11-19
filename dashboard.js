@@ -1,4 +1,6 @@
 const STORAGE_KEY = "vice-city-overlay-secret";
+const TEXT_COLOR_KEY = "vice-city-overlay-text-color";
+const DEFAULT_TEXT_COLOR = "#ffffff";
 const SYNC_INTERVAL = 3000;
 
 const connectView = document.querySelector("#connect-view");
@@ -29,6 +31,9 @@ const add30MinutesButton = document.querySelector("#add-30-min");
 const add1HourButton = document.querySelector("#add-1-hour");
 const resetMissionsButton = document.querySelector("#reset-missions");
 const saveMissionTotalButton = document.querySelector("#mission-total-form button");
+const textColorInput = document.querySelector("#text-color");
+const textColorValue = document.querySelector("#text-color-value");
+const resetTextColorButton = document.querySelector("#reset-text-color");
 const actionButtons = [
   toggleTimerButton,
   resetTimerButton,
@@ -42,8 +47,24 @@ const actionButtons = [
 ];
 
 let secret = localStorage.getItem(STORAGE_KEY) || "";
+let overlayTextColor = localStorage.getItem(TEXT_COLOR_KEY) || DEFAULT_TEXT_COLOR;
 let state = null;
 let requestInFlight = false;
+
+function isHexColor(value) {
+  return /^#[0-9a-f]{6}$/i.test(value);
+}
+
+function applyOverlayTextColor(color) {
+  const safeColor = isHexColor(color) ? color : DEFAULT_TEXT_COLOR;
+  overlayTextColor = safeColor;
+  document.documentElement.style.setProperty("--overlay-text", safeColor);
+  textColorInput.value = safeColor;
+  textColorValue.textContent = safeColor.toUpperCase();
+  localStorage.setItem(TEXT_COLOR_KEY, safeColor);
+}
+
+applyOverlayTextColor(overlayTextColor);
 
 function formatTime(seconds) {
   const safeSeconds = Math.max(0, Math.floor(seconds));
@@ -119,6 +140,7 @@ async function requestState() {
 
 function overlayAddress() {
   const url = new URL("/overlay.html", window.location.origin);
+  url.searchParams.set("textColor", overlayTextColor);
   url.hash = secret;
   return url.toString();
 }
@@ -216,6 +238,20 @@ document.querySelector("#decrement-mission").addEventListener("click", () => pos
 
 document.querySelector("#reset-missions").addEventListener("click", () => {
   if (window.confirm("Zerar a contagem de missões?")) postAction("reset_missions");
+});
+
+textColorInput.addEventListener("input", (event) => {
+  applyOverlayTextColor(event.target.value);
+  if (overlayUrl.textContent !== "A URL privada aparece depois de conectar.") {
+    overlayUrl.textContent = overlayAddress();
+  }
+});
+
+resetTextColorButton.addEventListener("click", () => {
+  applyOverlayTextColor(DEFAULT_TEXT_COLOR);
+  if (overlayUrl.textContent !== "A URL privada aparece depois de conectar.") {
+    overlayUrl.textContent = overlayAddress();
+  }
 });
 
 document.querySelector("#mission-total-form").addEventListener("submit", (event) => {

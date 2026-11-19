@@ -6,6 +6,11 @@ const errorDisplay = document.querySelector("#overlay-error");
 let state = null;
 let requestInFlight = false;
 
+const requestedTextColor = new URL(window.location.href).searchParams.get("textColor");
+if (/^#[0-9a-f]{6}$/i.test(requestedTextColor || "")) {
+  document.documentElement.style.setProperty("--overlay-text", requestedTextColor);
+}
+
 function formatTime(seconds) {
   const safeSeconds = Math.max(0, Math.floor(seconds));
   const hours = Math.floor(safeSeconds / 3600);

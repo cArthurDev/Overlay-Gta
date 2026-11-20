@@ -7,10 +7,10 @@ Painel web e overlay transparente para controlar o contador de missões e o temp
 ### 1. Preparar o Supabase
 
 1. Crie um projeto no Supabase.
-2. Abra **SQL Editor**, cole o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql) e execute.
+2. Abra **SQL Editor**, cole o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql) e execute. O script mantém o estado atual como o primeiro perfil e cria o estado independente do segundo.
 3. Em **Project Settings → API Keys**, copie a URL do projeto e crie/ copie uma chave **Secret** (`sb_secret_...`). Ela ignora as políticas RLS; mantenha-a somente no servidor, como variável de ambiente da Vercel. O nome antigo `service_role` também é aceito.
 
-Se já configurou o banco anteriormente, execute novamente o SQL atualizado para habilitar as ações de adicionar tempo ao cronômetro. A criação da tabela e do estado inicial é idempotente.
+Se já configurou o banco anteriormente, execute o SQL para criar os estados separados por perfil e habilitar as ações atuais do cronômetro. O estado existente é copiado para o primeiro perfil; o segundo começa com 0 missões de 23 e cronômetro pausado. O script pode ser executado novamente sem apagar o progresso.
 
 ### 2. Publicar o projeto
 
@@ -23,6 +23,7 @@ Em **Project Settings → Environment Variables**, adicione:
 | `SUPABASE_URL` | URL do projeto Supabase |
 | `SUPABASE_SECRET_KEY` | Chave secreta `sb_secret_...` do Supabase (ou use `SUPABASE_SERVICE_ROLE_KEY` para a chave antiga `service_role`) |
 | `OVERLAY_SECRET` | Uma chave longa e aleatória, criada por você |
+| `OVERLAY_SECRET_2` | Uma segunda chave longa e aleatória para o outro usuário |
 
 No PowerShell, gere a chave da overlay sem enviá-la a nenhum serviço:
 
@@ -30,11 +31,11 @@ No PowerShell, gere a chave da overlay sem enviá-la a nenhum serviço:
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
-Depois de salvar as variáveis, faça um novo deploy para aplicá-las.
+Configure uma chave longa e diferente em cada variável e compartilhe `OVERLAY_SECRET_2` somente com o segundo usuário. Cada chave tem seu próprio progresso, cronômetro e URL da overlay; as duas pessoas podem usar o sistema ao mesmo tempo sem misturar os dados. Depois de salvar as variáveis, faça um novo deploy para aplicá-las.
 
 ### 3. Conectar o painel e o OBS
 
-1. Abra o endereço do projeto na Vercel e informe o mesmo valor definido em `OVERLAY_SECRET`.
+1. Abra o endereço do projeto na Vercel e cada usuário informa sua chave de acesso (`OVERLAY_SECRET` ou `OVERLAY_SECRET_2`).
 2. Clique em **Copiar URL** no painel.
 3. No OBS, adicione uma **Fonte de navegador**, cole a URL e configure a fonte com **420 × 90** pixels.
 

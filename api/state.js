@@ -44,12 +44,12 @@ async function supabaseRequest(path, options = {}) {
   return response.json();
 }
 
-async function readState() {
+async function readState(profileId) {
   const rows = await supabaseRequest(
-    "overlay_state?select=id,mission_count,mission_total,accumulated_seconds,timer_started_at,updated_at&id=eq.true",
+    `overlay_states?select=profile_id,mission_count,mission_total,accumulated_seconds,timer_started_at,updated_at&profile_id=eq.${profileId}`,
   );
   if (!Array.isArray(rows) || rows.length === 0) {
-    throw new Error("Estado não encontrado. Execute o SQL de configuração no Supabase.");
+    throw new Error("Estado do usuário não encontrado. Execute o SQL de configuração no Supabase.");
   }
   return rows[0];
 }
@@ -74,16 +74,22 @@ module.exports = async function handler(req, res) {
     return sendError(res, 405, "Método não permitido.");
   }
 
-  const expectedSecret = process.env.OVERLAY_SECRET;
+  const credentials = [
+    { secret: process.env.OVERLAY_SECRET, profileId: "user_1" },
+    { secret: process.env.OVERLAY_SECRET_2, profileId: "user_2" },
+  ];
   const authorization = req.headers.authorization || "";
   const providedSecret = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-  if (!matchesSecret(providedSecret, expectedSecret)) {
-    return sendError(res, 401, "Chave inválida. Confira o OVERLAY_SECRET.");
+  const matchedCredential = credentials.find(
+    ({ secret }) => matchesSecret(providedSecret, secret),
+  );
+  if (!matchedCredential) {
+    return sendError(res, 401, "Chave inválida. Confira as chaves de acesso configuradas na Vercel.");
   }
 
   try {
     if (req.method === "GET") {
-      const state = await readState();
+      const state = await readState(matchedCredential.profileId);
       return res.status(200).json({ state });
     }
 
@@ -114,7 +120,11 @@ module.exports = async function handler(req, res) {
 
     const rows = await supabaseRequest("rpc/apply_overlay_action", {
       method: "POST",
-      body: JSON.stringify({ p_action: body.action, p_value: body.value ?? null }),
+      body: JSON.stringify({
+        p_profile_id: matchedCredential.profileId,
+        p_action: body.action,
+        p_value: body.value ?? null,
+      }),
     });
     const updatedState = Array.isArray(rows) ? rows[0] : rows;
     if (!updatedState) throw new Error("O Supabase não retornou o estado atualizado.");
@@ -122,7 +132,7 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error("Falha na API da overlay:", error);
     const isConfigurationError = error.message.includes("Configure ")
-      || error.message.includes("Estado não encontrado");
+      || error.message.includes("Estado do usuário não encontrado");
     return sendError(res, isConfigurationError ? 503 : 502, error.message);
   }
 };

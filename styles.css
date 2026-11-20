@@ -720,6 +720,28 @@ h2 {
   min-height: 62px;
 }
 
+.overlay-logo {
+  width: 64px;
+  height: 48px;
+  flex: 0 0 auto;
+  align-self: center;
+  object-fit: contain;
+  animation: logo-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes logo-breathe {
+  0%,
+  100% {
+    opacity: 0.94;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
 .overlay-error {
   position: absolute;
   top: 100%;
@@ -777,6 +799,10 @@ h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .overlay-logo {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

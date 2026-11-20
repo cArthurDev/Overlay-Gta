@@ -13,35 +13,57 @@
         <span class="brand-mark" aria-hidden="true">VC</span>
         <span class="brand-name">VICE CITY <span>OVERLAY</span></span>
       </a>
-      <span class="topbar-note"><span class="status-dot"></span> PAINEL DE TRANSMISSÃO</span>
+      <span class="topbar-note">
+        <span class="status-dot"></span>
+        <span class="topbar-note-primary">ESTÚDIO VICE CITY</span>
+        <span class="topbar-divider">/</span>
+        <span class="topbar-note-secondary">SINAL DE CONTROLE</span>
+      </span>
     </header>
 
     <main class="dashboard-shell">
       <section id="connect-view" class="connect-view" aria-labelledby="connect-title">
-        <div class="eyebrow">CONFIGURAÇÃO INICIAL</div>
-        <h1 id="connect-title">Conecte seu painel</h1>
-        <p class="intro">Informe sua chave de acesso para controlar seu próprio progresso e cronômetro.</p>
-        <form id="connect-form" class="connect-form">
-          <label for="secret-input">Chave de acesso</label>
-          <input id="secret-input" name="secret" type="password" autocomplete="off" required
-                 placeholder="Informe sua chave de acesso">
-          <button class="button button-primary" type="submit">Conectar painel <span aria-hidden="true">→</span></button>
-          <p id="connect-error" class="form-error" role="alert" hidden></p>
-        </form>
-        <p class="help-note">A chave fica salva somente neste navegador. Não compartilhe sua URL privada da overlay.</p>
+        <div class="connect-art">
+          <div class="connect-art-topline"><span>VICE CITY · FL</span><span>CHANNEL 01</span></div>
+          <div class="connect-art-center">
+            <img class="connect-art-logo" src="/images/logo-gta-vi.webp" alt="Grand Theft Auto VI" width="72" height="56">
+            <div class="connect-art-title"><span>TRANSMISSÃO</span><strong>CONTROL ROOM</strong></div>
+          </div>
+          <div class="connect-art-footer"><span>MISSION TRACKER</span><span>OBS READY</span></div>
+        </div>
+        <div class="connect-content">
+          <div class="eyebrow">ACESSO DO OPERADOR</div>
+          <h1 id="connect-title">Conecte seu painel</h1>
+          <p class="intro">Seu progresso e cronômetro, prontos para a transmissão.</p>
+          <form id="connect-form" class="connect-form">
+            <label for="secret-input">Chave de acesso</label>
+            <input id="secret-input" name="secret" type="password" autocomplete="off" required
+                   placeholder="Informe sua chave de acesso">
+            <button class="button button-primary" type="submit">Entrar no painel <span aria-hidden="true">→</span></button>
+            <p id="connect-error" class="form-error" role="alert" hidden></p>
+          </form>
+          <p class="help-note">Sua chave fica salva neste navegador. Não compartilhe a URL privada da overlay.</p>
+        </div>
       </section>
 
       <section id="dashboard-view" hidden aria-labelledby="page-title">
         <div class="page-heading">
           <div>
-            <div class="eyebrow">SESSÃO ATIVA</div>
+            <div class="eyebrow">CONTROL ROOM <span class="heading-divider">/</span> SESSÃO ATIVA</div>
             <h1 id="page-title">Controle da transmissão</h1>
             <p class="intro">Seu progresso, atualizado na overlay do OBS.</p>
           </div>
           <button id="disconnect-button" class="button button-quiet" type="button">Trocar chave</button>
         </div>
 
-        <div class="dashboard-grid">
+        <nav class="dashboard-tabs" aria-label="Seções do painel">
+          <button id="dashboard-tab" class="dashboard-tab is-active" type="button"
+                  aria-controls="dashboard-content" aria-current="page">Painel</button>
+          <button id="templates-tab" class="dashboard-tab" type="button"
+                  aria-controls="templates-view">Templates</button>
+        </nav>
+
+        <div id="dashboard-content" class="dashboard-grid">
           <div class="main-column">
             <section class="panel preview-panel" aria-labelledby="preview-title">
               <div class="panel-heading">
@@ -52,7 +74,7 @@
                 <span id="connection-status" class="live-status"><span class="status-dot"></span> CONECTANDO</span>
               </div>
               <div class="preview-stage">
-                <div class="overlay-preview" aria-label="Prévia da overlay">
+                <div class="overlay-preview overlay-template" aria-label="Prévia da overlay">
                   <img class="overlay-logo" src="/images/logo-gta-vi.webp" alt="Grand Theft Auto VI" width="64" height="48">
                   <div class="overlay-cell mission-cell">
                     <span class="overlay-label">MISSÕES</span>
@@ -63,7 +85,7 @@
                     <span id="preview-time" class="overlay-value">00:00:00</span>
                   </div>
                 </div>
-                <span class="stage-caption">FUNDO TRANSPARENTE · PRONTO PARA O OBS</span>
+                <span class="stage-caption">TEMPLATE ATIVO · PRONTO PARA O OBS</span>
               </div>
               <div class="overlay-appearance">
                 <div>
@@ -133,7 +155,7 @@
             <section class="panel obs-panel" aria-labelledby="obs-title">
               <div class="eyebrow">SAÍDA PARA STREAM</div>
               <h2 id="obs-title">Adicionar ao OBS</h2>
-              <p>Use esta URL como uma fonte de navegador. A imagem tem fundo transparente e atualiza junto com o painel.</p>
+              <p>Use esta URL como uma fonte de navegador. O template escolhido e os dados acompanham o painel.</p>
               <div class="url-box">
                 <span id="overlay-url" class="url-text">A URL privada aparece depois de conectar.</span>
                 <button id="copy-url" class="button button-secondary copy-button" type="button" disabled>Copiar URL</button>
@@ -155,9 +177,22 @@
             </section>
           </aside>
         </div>
+        <section id="templates-view" class="templates-view" hidden aria-labelledby="templates-title">
+          <div class="templates-heading">
+            <div>
+              <div class="eyebrow">APARÊNCIA DA OVERLAY</div>
+              <h2 id="templates-title">Escolha um template</h2>
+              <p class="intro">Selecione o fundo que combina com a sua transmissão.</p>
+            </div>
+            <span id="template-selection-status" class="state-pill"></span>
+          </div>
+          <div id="template-grid" class="template-grid"></div>
+          <p class="template-note">Sua escolha atualiza a prévia e a URL no Painel. Depois, copie a nova URL e substitua a da fonte no OBS.</p>
+        </section>
         <p id="dashboard-error" class="dashboard-error" role="alert" hidden></p>
       </section>
     </main>
+    <script src="/overlay-templates.js" defer></script>
     <script src="/dashboard.js" defer></script>
   </body>
 </html>

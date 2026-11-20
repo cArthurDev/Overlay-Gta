@@ -41,4 +41,8 @@ Configure uma chave longa e diferente em cada variável e compartilhe `OVERLAY_S
 
 A URL copiada contém a chave privada no fragmento (`#...`) para que ela não seja enviada como parte da requisição da página. Trate essa URL como uma senha: quem a tiver pode ver e controlar o painel. Se ela vazar, gere outro `OVERLAY_SECRET` na Vercel e faça novo deploy.
 
-O painel começa com 0 missões de 23 e cronômetro pausado. O tempo continua contando entre atualizações da página; pausar preserva o total. As alterações da overlay sincronizam em até alguns segundos.
+O painel começa com o template Vice City, 0 missões de 23 e cronômetro pausado. O tempo continua contando entre atualizações da página; pausar preserva o total. As alterações da overlay sincronizam em até alguns segundos.
+
+### Adicionar templates
+
+Coloque as imagens de fundo em `templates/` (recomendado: **640 × 126 px**) e registre cada uma em `overlay-templates.js`, incluindo um `id`, nome, descrição e caminho da imagem. A aba já inclui Vice City, Neon Boulevard, Marina Sunset e Sunset District; `template-1` é o padrão. Ao selecionar outro no painel, a URL da overlay muda; copie a URL atualizada e substitua a da fonte de navegador no OBS.

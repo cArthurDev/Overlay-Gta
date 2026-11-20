@@ -3,13 +3,23 @@ const TEXT_COLOR_KEY = "vice-city-overlay-text-color";
 const GRADIENT_ENABLED_KEY = "vice-city-overlay-gradient-enabled";
 const GRADIENT_START_KEY = "vice-city-overlay-gradient-start";
 const GRADIENT_END_KEY = "vice-city-overlay-gradient-end";
+const TEMPLATE_STORAGE_KEY = "vice-city-overlay-template";
 const DEFAULT_TEXT_COLOR = "#ffffff";
 const DEFAULT_GRADIENT_START = "#b6f36b";
 const DEFAULT_GRADIENT_END = "#ffffff";
+const TEMPLATE_CONFIG = window.OVERLAY_TEMPLATE_CONFIG;
+const DEFAULT_TEMPLATE_ID = TEMPLATE_CONFIG.defaultId;
 const SYNC_INTERVAL = 3000;
 
 const connectView = document.querySelector("#connect-view");
 const dashboardView = document.querySelector("#dashboard-view");
+const dashboardContent = document.querySelector("#dashboard-content");
+const dashboardTab = document.querySelector("#dashboard-tab");
+const templatesTab = document.querySelector("#templates-tab");
+const templatesView = document.querySelector("#templates-view");
+const templateGrid = document.querySelector("#template-grid");
+const templateSelectionStatus = document.querySelector("#template-selection-status");
+const overlayPreviews = document.querySelectorAll(".overlay-template");
 const connectForm = document.querySelector("#connect-form");
 const connectError = document.querySelector("#connect-error");
 const dashboardError = document.querySelector("#dashboard-error");
@@ -59,6 +69,7 @@ let overlayTextColor = localStorage.getItem(TEXT_COLOR_KEY) || DEFAULT_TEXT_COLO
 let gradientEnabled = localStorage.getItem(GRADIENT_ENABLED_KEY) === "true";
 let gradientStart = localStorage.getItem(GRADIENT_START_KEY) || DEFAULT_GRADIENT_START;
 let gradientEnd = localStorage.getItem(GRADIENT_END_KEY) || DEFAULT_GRADIENT_END;
+let selectedTemplateId = DEFAULT_TEMPLATE_ID;
 let state = null;
 let requestInFlight = false;
 
@@ -116,6 +127,90 @@ function setConnected(connected) {
   dashboardView.hidden = !connected;
 }
 
+function storedTemplateFor(userSecret) {
+  const savedTemplateId = localStorage.getItem(`${TEMPLATE_STORAGE_KEY}:${userSecret}`);
+  return TEMPLATE_CONFIG.templates.some((template) => template.id === savedTemplateId)
+    ? savedTemplateId
+    : DEFAULT_TEMPLATE_ID;
+}
+
+function applyTemplate(templateId) {
+  const template = TEMPLATE_CONFIG.templates.find((item) => item.id === templateId)
+    || TEMPLATE_CONFIG.templates.find((item) => item.id === DEFAULT_TEMPLATE_ID);
+  if (!template) throw new Error("Nenhum template padrão foi configurado.");
+
+  selectedTemplateId = template.id;
+  const background = `url("${template.image}")`;
+  overlayPreviews.forEach((preview) => {
+    preview.style.setProperty("--template-background", background);
+  });
+  templateSelectionStatus.textContent = `EM USO · ${template.name.toUpperCase()}`;
+  templateGrid.querySelectorAll(".template-card").forEach((card) => {
+    const selected = card.dataset.templateId === template.id;
+    card.classList.toggle("is-selected", selected);
+    card.setAttribute("aria-pressed", String(selected));
+    card.querySelector(".template-card-state").textContent = selected ? "EM USO" : "SELECIONAR";
+  });
+  return template;
+}
+
+function renderTemplateOptions() {
+  TEMPLATE_CONFIG.templates.forEach((template) => {
+    const card = document.createElement("button");
+    card.className = "template-card";
+    card.type = "button";
+    card.dataset.templateId = template.id;
+    card.setAttribute("aria-pressed", "false");
+
+    const art = document.createElement("span");
+    art.className = "template-card-art";
+    art.style.setProperty("--template-image", `url("${template.image}")`);
+    art.setAttribute("aria-hidden", "true");
+
+    const metadata = document.createElement("span");
+    metadata.className = "template-card-meta";
+
+    const name = document.createElement("span");
+    name.className = "template-card-name";
+    name.textContent = template.name;
+
+    const status = document.createElement("span");
+    status.className = "template-card-state";
+    status.textContent = "SELECIONAR";
+
+    const description = document.createElement("span");
+    description.className = "template-card-description";
+    description.textContent = template.description;
+
+    metadata.append(name, status);
+    card.append(art, metadata, description);
+    card.addEventListener("click", () => selectTemplate(template.id));
+    templateGrid.append(card);
+  });
+}
+
+function selectTemplate(templateId) {
+  const template = applyTemplate(templateId);
+  localStorage.setItem(`${TEMPLATE_STORAGE_KEY}:${secret}`, template.id);
+  overlayUrl.textContent = overlayAddress();
+  copyUrlButton.disabled = false;
+  copyFeedback.textContent = "Template selecionado. Copie a URL atualizada e substitua-a no OBS.";
+}
+
+function setDashboardSection(showTemplates) {
+  dashboardContent.hidden = showTemplates;
+  templatesView.hidden = !showTemplates;
+  dashboardTab.classList.toggle("is-active", !showTemplates);
+  templatesTab.classList.toggle("is-active", showTemplates);
+  if (showTemplates) {
+    dashboardTab.removeAttribute("aria-current");
+    templatesTab.setAttribute("aria-current", "page");
+  } else {
+    templatesTab.removeAttribute("aria-current");
+    dashboardTab.setAttribute("aria-current", "page");
+  }
+}
+
 function setConnectionStatus(connected) {
   connectionStatus.innerHTML = connected
     ? '<span class="status-dot"></span> CONECTADO'
@@ -171,6 +266,7 @@ async function requestState() {
 
 function overlayAddress() {
   const url = new URL("/overlay.html", window.location.origin);
+  url.searchParams.set("template", selectedTemplateId);
   url.searchParams.set("textColor", overlayTextColor);
   url.searchParams.set("textGradient", String(gradientEnabled));
   url.searchParams.set("gradientStart", gradientStart);
@@ -181,15 +277,17 @@ function overlayAddress() {
 
 function showDashboard() {
   setConnected(true);
+  applyTemplate(selectedTemplateId);
   overlayUrl.textContent = overlayAddress();
   copyUrlButton.disabled = false;
 }
 
 async function connect(value) {
   secret = value.trim();
-  if (!secret) throw new Error("Informe a chave configurada na Vercel.");
+  if (!secret) throw new Error("Informe a sua chave.");
 
   const result = await requestState();
+  selectedTemplateId = storedTemplateFor(secret);
   localStorage.setItem(STORAGE_KEY, secret);
   state = result;
   showDashboard();
@@ -211,7 +309,7 @@ connectForm.addEventListener("submit", async (event) => {
     connectError.hidden = false;
   } finally {
     button.disabled = false;
-    button.innerHTML = 'Conectar painel <span aria-hidden="true">→</span>';
+    button.innerHTML = 'Entrar no painel <span aria-hidden="true">→</span>';
   }
 });
 
@@ -223,6 +321,9 @@ document.querySelector("#disconnect-button").addEventListener("click", () => {
   secretInput.value = "";
   secretInput.focus();
 });
+
+dashboardTab.addEventListener("click", () => setDashboardSection(false));
+templatesTab.addEventListener("click", () => setDashboardSection(true));
 
 async function postAction(action, value) {
   if (requestInFlight || !state) return;
@@ -360,7 +461,10 @@ function tick() {
   if (state) render();
 }
 
+renderTemplateOptions();
+
 if (secret) {
+  selectedTemplateId = storedTemplateFor(secret);
   secretInput.value = secret;
   setConnected(true);
   showDashboard();

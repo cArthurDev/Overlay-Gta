@@ -6,12 +6,23 @@ const errorDisplay = document.querySelector("#overlay-error");
 let state = null;
 let requestInFlight = false;
 
-const requestedTextColor = new URL(window.location.href).searchParams.get("textColor");
+const overlayParams = new URL(window.location.href).searchParams;
+const requestedTemplateId = overlayParams.get("template") || window.OVERLAY_TEMPLATE_CONFIG.defaultId;
+const activeTemplate = window.OVERLAY_TEMPLATE_CONFIG.templates.find(
+  (template) => template.id === requestedTemplateId,
+) || window.OVERLAY_TEMPLATE_CONFIG.templates.find(
+  (template) => template.id === window.OVERLAY_TEMPLATE_CONFIG.defaultId,
+);
+document.querySelector(".overlay-root").style.setProperty(
+  "--template-background",
+  `url("${activeTemplate.image}")`,
+);
+
+const requestedTextColor = overlayParams.get("textColor");
 if (/^#[0-9a-f]{6}$/i.test(requestedTextColor || "")) {
   document.documentElement.style.setProperty("--overlay-text", requestedTextColor);
 }
 
-const overlayParams = new URL(window.location.href).searchParams;
 const requestedGradientEnabled = overlayParams.get("textGradient") === "true";
 const requestedGradientStart = overlayParams.get("gradientStart");
 const requestedGradientEnd = overlayParams.get("gradientEnd");

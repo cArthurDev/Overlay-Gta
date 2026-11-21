@@ -237,6 +237,16 @@ function safeCollaboratorUrl(value) {
   }
 }
 
+function getTwitchChannelName(value) {
+  try {
+    const url = new URL(value);
+    if (!["www.twitch.tv", "twitch.tv"].includes(url.hostname.toLowerCase())) return null;
+    return url.pathname.split("/").filter(Boolean)[0] || null;
+  } catch {
+    return null;
+  }
+}
+
 function renderCollaborators() {
   const collaborators = Array.isArray(window.OVERLAY_COLLABORATORS)
     ? window.OVERLAY_COLLABORATORS
@@ -263,6 +273,19 @@ function renderCollaborators() {
     const url = safeCollaboratorUrl(collaborator.url);
     const card = document.createElement("article");
     card.className = "collaborator-card";
+
+    const channelName = getTwitchChannelName(url);
+    if (channelName) {
+      const preview = document.createElement("iframe");
+      preview.className = "collaborator-preview";
+      const parent = window.location.hostname || "localhost";
+      preview.src = `https://player.twitch.tv/?channel=${encodeURIComponent(channelName)}&parent=${encodeURIComponent(parent)}&muted=true&autoplay=false`;
+      preview.title = `Live de ${collaborator.name} na Twitch`;
+      preview.allow = "autoplay; fullscreen";
+      preview.loading = "lazy";
+      preview.setAttribute("allowfullscreen", "");
+      card.append(preview);
+    }
 
     const identity = document.createElement("div");
     identity.className = "collaborator-identity";

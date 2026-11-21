@@ -24,6 +24,9 @@ Em **Project Settings → Environment Variables**, adicione:
 | `SUPABASE_SECRET_KEY` | Chave secreta `sb_secret_...` do Supabase (ou use `SUPABASE_SERVICE_ROLE_KEY` para a chave antiga `service_role`) |
 | `OVERLAY_SECRET` | Uma chave longa e aleatória, criada por você |
 | `OVERLAY_SECRET_2` | Uma segunda chave longa e aleatória para o outro usuário |
+| `OVERLAY_SECRET_3` | Chave do terceiro usuário |
+| `OVERLAY_SECRET_4` | Chave do quarto usuário |
+| `OVERLAY_SECRET_5` | Chave do quinto usuário |
 
 No PowerShell, gere a chave da overlay sem enviá-la a nenhum serviço:
 
@@ -31,11 +34,11 @@ No PowerShell, gere a chave da overlay sem enviá-la a nenhum serviço:
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
-Configure uma chave longa e diferente em cada variável e compartilhe `OVERLAY_SECRET_2` somente com o segundo usuário. Cada chave tem seu próprio progresso, cronômetro e URL da overlay; as duas pessoas podem usar o sistema ao mesmo tempo sem misturar os dados. Depois de salvar as variáveis, faça um novo deploy para aplicá-las.
+Configure uma chave longa e diferente em cada variável e compartilhe apenas a chave correspondente a cada usuário. Cada chave tem seu próprio progresso, cronômetro e URL da overlay; até cinco pessoas podem usar o sistema ao mesmo tempo sem misturar os dados. Depois de salvar as variáveis, faça um novo deploy para aplicá-las.
 
 ### 3. Conectar o painel e o OBS
 
-1. Abra o endereço do projeto na Vercel e cada usuário informa sua chave de acesso (`OVERLAY_SECRET` ou `OVERLAY_SECRET_2`).
+1. Abra o endereço do projeto na Vercel e cada usuário informa sua chave de acesso (`OVERLAY_SECRET`, `OVERLAY_SECRET_2`, `OVERLAY_SECRET_3`, `OVERLAY_SECRET_4` ou `OVERLAY_SECRET_5`).
 2. Clique em **Copiar URL** no painel.
 3. No OBS, adicione uma **Fonte de navegador**, cole a URL e configure a fonte com **420 × 90** pixels.
 

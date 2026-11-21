@@ -77,6 +77,9 @@ module.exports = async function handler(req, res) {
   const credentials = [
     { secret: process.env.OVERLAY_SECRET, profileId: "user_1" },
     { secret: process.env.OVERLAY_SECRET_2, profileId: "user_2" },
+    { secret: process.env.OVERLAY_SECRET_3, profileId: "user_3" },
+    { secret: process.env.OVERLAY_SECRET_4, profileId: "user_4" },
+    { secret: process.env.OVERLAY_SECRET_5, profileId: "user_5" },
   ];
   const authorization = req.headers.authorization || "";
   const providedSecret = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";

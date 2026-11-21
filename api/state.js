@@ -118,6 +118,25 @@ module.exports = async function handler(req, res) {
       return sendError(res, 400, "O tempo adicionado deve ser 10, 30 ou 60 minutos.");
     }
 
+    if (body.action === "set_mission_total") {
+      const currentState = await readState(matchedCredential.profileId);
+      const rows = await supabaseRequest(
+        `overlay_states?profile_id=eq.${matchedCredential.profileId}`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            mission_count: Math.min(Number(currentState.mission_count), body.value),
+            mission_total: body.value,
+            updated_at: new Date().toISOString(),
+          }),
+        },
+      );
+      const updatedState = Array.isArray(rows) ? rows[0] : rows;
+      if (!updatedState) throw new Error("O Supabase não retornou a meta atualizada.");
+      return res.status(200).json({ state: updatedState });
+    }
+
     const rows = await supabaseRequest("rpc/apply_overlay_action", {
       method: "POST",
       body: JSON.stringify({

@@ -73,6 +73,7 @@ let selectedTemplateId = DEFAULT_TEMPLATE_ID;
 let state = null;
 let requestInFlight = false;
 let syncInFlight = false;
+let missionTotalEditing = false;
 
 function isHexColor(value) {
   return /^#[0-9a-f]{6}$/i.test(value);
@@ -233,7 +234,9 @@ function render() {
   previewMissions.innerHTML = `${formattedCount}<span class="overlay-total">/${total}</span>`;
   missionCount.textContent = String(completed);
   missionTotal.textContent = String(total);
-  missionTotalInput.value = String(total);
+  if (!missionTotalEditing) {
+    missionTotalInput.value = String(total);
+  }
   progressFill.style.width = `${progress}%`;
   progressTrack.setAttribute("aria-valuemax", String(total));
   progressTrack.setAttribute("aria-valuenow", String(completed));
@@ -344,9 +347,14 @@ async function postAction(action, value) {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Não foi possível atualizar o painel.");
     state = result.state;
+    if (action === "set_mission_total") missionTotalEditing = false;
     render();
     setConnectionStatus(true);
   } catch (error) {
+    if (action === "set_mission_total") {
+      missionTotalEditing = false;
+      if (state) missionTotalInput.value = String(state.mission_total);
+    }
     dashboardError.textContent = error.message;
     dashboardError.hidden = false;
     setConnectionStatus(false);
@@ -419,6 +427,18 @@ resetTextColorButton.addEventListener("click", () => {
   }
 });
 
+missionTotalInput.addEventListener("focus", () => {
+  missionTotalEditing = true;
+});
+
+missionTotalInput.addEventListener("input", () => {
+  missionTotalEditing = true;
+});
+
+missionTotalInput.addEventListener("blur", () => {
+  missionTotalEditing = false;
+});
+
 document.querySelector("#mission-total-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const value = Number(missionTotalInput.value);
@@ -427,6 +447,7 @@ document.querySelector("#mission-total-form").addEventListener("submit", (event)
     dashboardError.hidden = false;
     return;
   }
+  missionTotalEditing = true;
   postAction("set_mission_total", value);
 });
 

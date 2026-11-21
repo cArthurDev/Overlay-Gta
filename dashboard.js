@@ -283,7 +283,6 @@ function renderCollaborators() {
       preview.title = `Live de ${collaborator.name} na Twitch`;
       preview.allow = "autoplay; fullscreen";
       preview.loading = "lazy";
-      preview.setAttribute("allowfullscreen", "");
       card.append(preview);
     }
 

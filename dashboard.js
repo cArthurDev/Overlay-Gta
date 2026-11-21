@@ -72,6 +72,7 @@ let gradientEnd = localStorage.getItem(GRADIENT_END_KEY) || DEFAULT_GRADIENT_END
 let selectedTemplateId = DEFAULT_TEMPLATE_ID;
 let state = null;
 let requestInFlight = false;
+let syncInFlight = false;
 
 function isHexColor(value) {
   return /^#[0-9a-f]{6}$/i.test(value);
@@ -439,9 +440,8 @@ copyUrlButton.addEventListener("click", async () => {
 });
 
 async function syncState() {
-  if (!secret || requestInFlight) return;
-  requestInFlight = true;
-  updateActionControls();
+  if (!secret || syncInFlight || requestInFlight) return;
+  syncInFlight = true;
   try {
     state = await requestState();
     dashboardError.hidden = true;
@@ -452,7 +452,7 @@ async function syncState() {
     dashboardError.hidden = false;
     setConnectionStatus(false);
   } finally {
-    requestInFlight = false;
+    syncInFlight = false;
     updateActionControls();
   }
 }

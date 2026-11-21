@@ -224,9 +224,18 @@ h2 {
   line-height: 1.5;
 }
 
+.collaborators-column .collaborators-heading {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.collaborators-column .collaborators-grid {
+  grid-template-columns: 1fr;
+}
+
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.42fr) minmax(280px, 0.78fr);
+  grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.42fr) minmax(280px, 0.78fr);
   align-items: start;
   gap: 18px;
 }
@@ -1023,6 +1032,13 @@ h2 {
   gap: 12px;
 }
 
+.collaborators-error {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .collaborator-card {
   min-width: 0;
   display: grid;
@@ -1057,6 +1073,8 @@ h2 {
 }
 
 .collaborator-mark {
+  position: relative;
+  overflow: hidden;
   width: 38px;
   height: 38px;
   flex: 0 0 38px;
@@ -1069,6 +1087,23 @@ h2 {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+.collaborator-avatar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  object-fit: cover;
+}
+
+.collaborator-mark.has-avatar .collaborator-avatar {
+  display: block;
+}
+
+.collaborator-mark.has-avatar .collaborator-initials {
+  display: none;
 }
 
 .collaborator-person {
@@ -1197,6 +1232,16 @@ h2 {
 
   .connect-content {
     padding: 30px;
+  }
+}
+
+@media (min-width: 801px) and (max-width: 1000px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(210px, 0.72fr) minmax(0, 2.8fr);
+  }
+
+  .side-column {
+    grid-column: 2;
   }
 }
 

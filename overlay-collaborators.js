@@ -1,4 +1,4 @@
-window.OVERLAY_COLLABORATORS = Object.freeze([
+const collaborators = Object.freeze([
   Object.freeze({
     name: "Vardil",
     platform: "Twitch",
@@ -10,3 +10,6 @@ window.OVERLAY_COLLABORATORS = Object.freeze([
     url: "https://www.twitch.tv/rafaelzinanni",
   }),
 ]);
+
+if (typeof window !== "undefined") window.OVERLAY_COLLABORATORS = collaborators;
+if (typeof module !== "undefined") module.exports = collaborators;

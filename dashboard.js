@@ -17,10 +17,9 @@ const dashboardContent = document.querySelector("#dashboard-content");
 const dashboardTab = document.querySelector("#dashboard-tab");
 const templatesTab = document.querySelector("#templates-tab");
 const templatesView = document.querySelector("#templates-view");
-const collaboratorsTab = document.querySelector("#collaborators-tab");
-const collaboratorsView = document.querySelector("#collaborators-view");
 const collaboratorsGrid = document.querySelector("#collaborators-grid");
 const collaboratorsCount = document.querySelector("#collaborators-count");
+const collaboratorsError = document.querySelector("#collaborators-error");
 const templateGrid = document.querySelector("#template-grid");
 const templateSelectionStatus = document.querySelector("#template-selection-status");
 const overlayPreviews = document.querySelectorAll(".overlay-template");
@@ -84,6 +83,7 @@ let state = null;
 let requestInFlight = false;
 let syncInFlight = false;
 let missionTotalEditing = false;
+let collaboratorAvatarsRequested = false;
 
 function isHexColor(value) {
   return /^#[0-9a-f]{6}$/i.test(value);
@@ -212,12 +212,10 @@ function selectTemplate(templateId) {
 function setDashboardSection(section) {
   dashboardContent.hidden = section !== "dashboard";
   templatesView.hidden = section !== "templates";
-  collaboratorsView.hidden = section !== "collaborators";
 
   const tabs = [
     [dashboardTab, "dashboard"],
     [templatesTab, "templates"],
-    [collaboratorsTab, "collaborators"],
   ];
 
   tabs.forEach(([tab, tabSection]) => {
@@ -242,6 +240,17 @@ function getTwitchChannelName(value) {
     const url = new URL(value);
     if (!["www.twitch.tv", "twitch.tv"].includes(url.hostname.toLowerCase())) return null;
     return url.pathname.split("/").filter(Boolean)[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+function safeTwitchAvatarUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname.toLowerCase() === "static-cdn.jtvnw.net"
+      ? url.toString()
+      : null;
   } catch {
     return null;
   }
@@ -276,6 +285,7 @@ function renderCollaborators() {
 
     const channelName = getTwitchChannelName(url);
     if (channelName) {
+      card.dataset.twitchLogin = channelName.toLowerCase();
       const preview = document.createElement("iframe");
       preview.className = "collaborator-preview";
       const parent = window.location.hostname || "localhost";
@@ -291,8 +301,17 @@ function renderCollaborators() {
 
     const mark = document.createElement("span");
     mark.className = "collaborator-mark";
-    mark.textContent = collaborator.name.trim().slice(0, 2).toUpperCase();
     mark.setAttribute("aria-hidden", "true");
+
+    const avatar = document.createElement("img");
+    avatar.className = "collaborator-avatar";
+    avatar.alt = "";
+    avatar.decoding = "async";
+
+    const initials = document.createElement("span");
+    initials.className = "collaborator-initials";
+    initials.textContent = collaborator.name.trim().slice(0, 2).toUpperCase();
+    mark.append(avatar, initials);
 
     const person = document.createElement("div");
     person.className = "collaborator-person";
@@ -315,6 +334,53 @@ function renderCollaborators() {
     card.append(identity, link);
     collaboratorsGrid.append(card);
   });
+}
+
+async function loadCollaboratorAvatars() {
+  if (collaboratorAvatarsRequested) return;
+  collaboratorAvatarsRequested = true;
+  collaboratorsError.hidden = true;
+
+  if (!collaboratorsGrid.querySelector(".collaborator-card[data-twitch-login]")) return;
+
+  try {
+    const response = await fetch("/api/twitch-profiles", { cache: "force-cache" });
+    const result = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(result?.error || "Não foi possível carregar os perfis da Twitch.");
+    }
+    if (!result?.profiles || typeof result.profiles !== "object" || Array.isArray(result.profiles)) {
+      throw new Error("A API de perfis da Twitch retornou dados inválidos.");
+    }
+
+    let missingProfile = false;
+    collaboratorsGrid.querySelectorAll(".collaborator-card[data-twitch-login]").forEach((card) => {
+      const login = card.dataset.twitchLogin;
+      const avatarUrl = safeTwitchAvatarUrl(result.profiles[login]);
+      if (!avatarUrl) {
+        missingProfile = true;
+        return;
+      }
+
+      const avatar = card.querySelector(".collaborator-avatar");
+      const mark = card.querySelector(".collaborator-mark");
+      avatar.addEventListener("load", () => mark.classList.add("has-avatar"), { once: true });
+      avatar.addEventListener("error", () => {
+        collaboratorsError.textContent = "A Twitch não retornou a imagem de perfil de um dos canais.";
+        collaboratorsError.hidden = false;
+      }, { once: true });
+      avatar.src = avatarUrl;
+    });
+
+    if (missingProfile) {
+      collaboratorsError.textContent = "A Twitch não retornou a imagem de perfil de um dos canais.";
+      collaboratorsError.hidden = false;
+    }
+  } catch (error) {
+    console.error("Não foi possível carregar as fotos de perfil da Twitch:", error);
+    collaboratorsError.textContent = error.message;
+    collaboratorsError.hidden = false;
+  }
 }
 
 function setConnectionStatus(connected) {
@@ -385,6 +451,7 @@ function overlayAddress() {
 
 function showDashboard() {
   setConnected(true);
+  loadCollaboratorAvatars();
   applyTemplate(selectedTemplateId);
   overlayUrl.textContent = overlayAddress();
   copyUrlButton.disabled = false;
@@ -432,7 +499,6 @@ document.querySelector("#disconnect-button").addEventListener("click", () => {
 
 dashboardTab.addEventListener("click", () => setDashboardSection("dashboard"));
 templatesTab.addEventListener("click", () => setDashboardSection("templates"));
-collaboratorsTab.addEventListener("click", () => setDashboardSection("collaborators"));
 
 async function postAction(action, value) {
   if (requestInFlight || !state) return;

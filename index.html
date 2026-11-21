@@ -61,11 +61,23 @@
                   aria-controls="dashboard-content" aria-current="page">Painel</button>
           <button id="templates-tab" class="dashboard-tab" type="button"
                   aria-controls="templates-view">Templates</button>
-          <button id="collaborators-tab" class="dashboard-tab" type="button"
-                  aria-controls="collaborators-view">Colaboradores</button>
         </nav>
 
         <div id="dashboard-content" class="dashboard-grid">
+          <aside class="collaborators-column">
+            <section id="collaborators-view" class="collaborators-view" aria-labelledby="collaborators-title">
+              <div class="collaborators-heading">
+                <div>
+                  <div class="eyebrow">REDE DE TRANSMISSÃO</div>
+                  <h2 id="collaborators-title">Colaboradores</h2>
+                  <p class="intro">Lives e canais dos streamers que usam o projeto.</p>
+                </div>
+                <span id="collaborators-count" class="state-pill">0 CANAIS</span>
+              </div>
+              <div id="collaborators-grid" class="collaborators-grid"></div>
+              <p id="collaborators-error" class="collaborators-error" role="status" aria-live="polite" hidden></p>
+            </section>
+          </aside>
           <div class="main-column">
             <section class="panel preview-panel" aria-labelledby="preview-title">
               <div class="panel-heading">
@@ -106,7 +118,6 @@
                 </div>
               </div>
             </section>
-
             <section class="panel timer-panel" aria-labelledby="timer-title">
               <div class="panel-heading">
                 <div>
@@ -198,17 +209,6 @@
           </div>
           <div id="template-grid" class="template-grid"></div>
           <p class="template-note">Sua escolha atualiza a prévia e a URL no Painel. Depois, copie a nova URL e substitua a da fonte no OBS.</p>
-        </section>
-        <section id="collaborators-view" class="collaborators-view" hidden aria-labelledby="collaborators-title">
-          <div class="collaborators-heading">
-            <div>
-              <div class="eyebrow">REDE DE TRANSMISSÃO</div>
-              <h2 id="collaborators-title">Colaboradores</h2>
-              <p class="intro">Lives e canais dos streamers que usam o projeto.</p>
-            </div>
-            <span id="collaborators-count" class="state-pill">0 CANAIS</span>
-          </div>
-          <div id="collaborators-grid" class="collaborators-grid"></div>
         </section>
         <p id="dashboard-error" class="dashboard-error" role="alert" hidden></p>
       </section>

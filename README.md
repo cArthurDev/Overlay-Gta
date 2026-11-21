@@ -27,6 +27,8 @@ Em **Project Settings → Environment Variables**, adicione:
 | `OVERLAY_SECRET_3` | Chave do terceiro usuário |
 | `OVERLAY_SECRET_4` | Chave do quarto usuário |
 | `OVERLAY_SECRET_5` | Chave do quinto usuário |
+| `TWITCH_CLIENT_ID` | Client ID do aplicativo Twitch usado para buscar as fotos de perfil |
+| `TWITCH_CLIENT_SECRET` | Client Secret do aplicativo Twitch (somente no servidor) |
 
 No PowerShell, gere a chave da overlay sem enviá-la a nenhum serviço:
 
@@ -35,6 +37,8 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
 Configure uma chave longa e diferente em cada variável e compartilhe apenas a chave correspondente a cada usuário. Cada chave tem seu próprio progresso, cronômetro e URL da overlay; até cinco pessoas podem usar o sistema ao mesmo tempo sem misturar os dados. Depois de salvar as variáveis, faça um novo deploy para aplicá-las.
+
+Para carregar as fotos de perfil dos colaboradores, crie um aplicativo no [Twitch Developer Console](https://dev.twitch.tv/console/apps), configure `TWITCH_CLIENT_ID` e `TWITCH_CLIENT_SECRET` como variáveis de ambiente da Vercel e faça um novo deploy. O Client Secret é usado apenas pela função serverless e nunca é enviado ao navegador.
 
 ### 3. Conectar o painel e o OBS
 
@@ -62,4 +66,4 @@ Object.freeze({
 }),
 ```
 
-Depois, faça o deploy para publicar a nova lista. Cada colaborador aparecerá na aba **Colaboradores** com um botão para abrir a live.
+Depois, faça o deploy para publicar a nova lista. Cada colaborador aparecerá na coluna **Colaboradores** do Painel com um botão para abrir a live.

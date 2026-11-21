@@ -102,6 +102,7 @@ module.exports = async function handler(req, res) {
       "pause",
       "reset_timer",
       "add_time",
+      "remove_time",
       "increment_mission",
       "decrement_mission",
       "reset_missions",
@@ -116,6 +117,36 @@ module.exports = async function handler(req, res) {
     }
     if (body.action === "add_time" && ![600, 1800, 3600].includes(body.value)) {
       return sendError(res, 400, "O tempo adicionado deve ser 10, 30 ou 60 minutos.");
+    }
+    if (body.action === "remove_time" && ![600, 1800, 3600].includes(body.value)) {
+      return sendError(res, 400, "O tempo removido deve ser 10, 30 ou 60 minutos.");
+    }
+
+    if (body.action === "remove_time") {
+      const currentState = await readState(matchedCredential.profileId);
+      const startedAt = currentState.timer_started_at ? Date.parse(currentState.timer_started_at) : null;
+      const runningSeconds = startedAt
+        ? Math.max(0, Math.floor((Date.now() - startedAt) / 1000))
+        : 0;
+      const remainingSeconds = Math.max(
+        0,
+        Number(currentState.accumulated_seconds) + runningSeconds - body.value,
+      );
+      const rows = await supabaseRequest(
+        `overlay_states?profile_id=eq.${matchedCredential.profileId}`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify({
+            accumulated_seconds: remainingSeconds,
+            timer_started_at: startedAt ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString(),
+          }),
+        },
+      );
+      const updatedState = Array.isArray(rows) ? rows[0] : rows;
+      if (!updatedState) throw new Error("O Supabase não retornou o tempo atualizado.");
+      return res.status(200).json({ state: updatedState });
     }
 
     if (body.action === "set_mission_total") {

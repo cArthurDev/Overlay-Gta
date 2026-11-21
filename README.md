@@ -46,3 +46,17 @@ O painel começa com o template Vice City, 0 missões de 23 e cronômetro pausad
 ### Adicionar templates
 
 Coloque as imagens de fundo em `templates/` (recomendado: **640 × 126 px**) e registre cada uma em `overlay-templates.js`, incluindo um `id`, nome, descrição e caminho da imagem. A aba já inclui Vice City, Neon Boulevard, Marina Sunset e Sunset District; `template-1` é o padrão. Ao selecionar outro no painel, a URL da overlay muda; copie a URL atualizada e substitua a da fonte de navegador no OBS.
+
+### Adicionar colaboradores
+
+Abra `overlay-collaborators.js` e adicione um item para cada streamer:
+
+```javascript
+Object.freeze({
+  name: "Nome do streamer",
+  platform: "Twitch",
+  url: "https://www.twitch.tv/usuario",
+}),
+```
+
+Depois, faça o deploy para publicar a nova lista. Cada colaborador aparecerá na aba **Colaboradores** com um botão para abrir a live.

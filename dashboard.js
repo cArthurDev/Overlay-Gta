@@ -17,6 +17,10 @@ const dashboardContent = document.querySelector("#dashboard-content");
 const dashboardTab = document.querySelector("#dashboard-tab");
 const templatesTab = document.querySelector("#templates-tab");
 const templatesView = document.querySelector("#templates-view");
+const collaboratorsTab = document.querySelector("#collaborators-tab");
+const collaboratorsView = document.querySelector("#collaborators-view");
+const collaboratorsGrid = document.querySelector("#collaborators-grid");
+const collaboratorsCount = document.querySelector("#collaborators-count");
 const templateGrid = document.querySelector("#template-grid");
 const templateSelectionStatus = document.querySelector("#template-selection-status");
 const overlayPreviews = document.querySelectorAll(".overlay-template");
@@ -44,6 +48,9 @@ const resetTimerButton = document.querySelector("#reset-timer");
 const add10MinutesButton = document.querySelector("#add-10-min");
 const add30MinutesButton = document.querySelector("#add-30-min");
 const add1HourButton = document.querySelector("#add-1-hour");
+const remove10MinutesButton = document.querySelector("#remove-10-min");
+const remove30MinutesButton = document.querySelector("#remove-30-min");
+const remove1HourButton = document.querySelector("#remove-1-hour");
 const resetMissionsButton = document.querySelector("#reset-missions");
 const saveMissionTotalButton = document.querySelector("#mission-total-form button");
 const textColorInput = document.querySelector("#text-color");
@@ -58,6 +65,9 @@ const actionButtons = [
   add10MinutesButton,
   add30MinutesButton,
   add1HourButton,
+  remove10MinutesButton,
+  remove30MinutesButton,
+  remove1HourButton,
   decrementMissionButton,
   incrementMissionButton,
   resetMissionsButton,
@@ -199,18 +209,90 @@ function selectTemplate(templateId) {
   copyFeedback.textContent = "Template selecionado. Copie a URL atualizada e substitua-a no OBS.";
 }
 
-function setDashboardSection(showTemplates) {
-  dashboardContent.hidden = showTemplates;
-  templatesView.hidden = !showTemplates;
-  dashboardTab.classList.toggle("is-active", !showTemplates);
-  templatesTab.classList.toggle("is-active", showTemplates);
-  if (showTemplates) {
-    dashboardTab.removeAttribute("aria-current");
-    templatesTab.setAttribute("aria-current", "page");
-  } else {
-    templatesTab.removeAttribute("aria-current");
-    dashboardTab.setAttribute("aria-current", "page");
+function setDashboardSection(section) {
+  dashboardContent.hidden = section !== "dashboard";
+  templatesView.hidden = section !== "templates";
+  collaboratorsView.hidden = section !== "collaborators";
+
+  const tabs = [
+    [dashboardTab, "dashboard"],
+    [templatesTab, "templates"],
+    [collaboratorsTab, "collaborators"],
+  ];
+
+  tabs.forEach(([tab, tabSection]) => {
+    const active = tabSection === section;
+    tab.classList.toggle("is-active", active);
+    if (active) tab.setAttribute("aria-current", "page");
+    else tab.removeAttribute("aria-current");
+  });
+}
+
+function safeCollaboratorUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? url.toString() : null;
+  } catch {
+    return null;
   }
+}
+
+function renderCollaborators() {
+  const collaborators = Array.isArray(window.OVERLAY_COLLABORATORS)
+    ? window.OVERLAY_COLLABORATORS
+    : [];
+  collaboratorsGrid.replaceChildren();
+
+  const validCollaborators = collaborators.filter((collaborator) =>
+    collaborator?.name
+    && typeof collaborator.url === "string"
+    && safeCollaboratorUrl(collaborator.url),
+  );
+
+  collaboratorsCount.textContent = `${validCollaborators.length} ${validCollaborators.length === 1 ? "CANAL" : "CANAIS"}`;
+
+  if (validCollaborators.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "collaborators-empty";
+    empty.innerHTML = "<strong>Nenhum colaborador cadastrado</strong><span>Adicione os streamers no arquivo de configuração do projeto.</span>";
+    collaboratorsGrid.append(empty);
+    return;
+  }
+
+  validCollaborators.forEach((collaborator) => {
+    const url = safeCollaboratorUrl(collaborator.url);
+    const card = document.createElement("article");
+    card.className = "collaborator-card";
+
+    const identity = document.createElement("div");
+    identity.className = "collaborator-identity";
+
+    const mark = document.createElement("span");
+    mark.className = "collaborator-mark";
+    mark.textContent = collaborator.name.trim().slice(0, 2).toUpperCase();
+    mark.setAttribute("aria-hidden", "true");
+
+    const person = document.createElement("div");
+    person.className = "collaborator-person";
+
+    const name = document.createElement("h3");
+    name.textContent = collaborator.name;
+    const platform = document.createElement("span");
+    platform.textContent = collaborator.platform || "LIVE";
+
+    person.append(name, platform);
+    identity.append(mark, person);
+
+    const link = document.createElement("a");
+    link.className = "collaborator-link";
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Abrir live";
+
+    card.append(identity, link);
+    collaboratorsGrid.append(card);
+  });
 }
 
 function setConnectionStatus(connected) {
@@ -326,8 +408,9 @@ document.querySelector("#disconnect-button").addEventListener("click", () => {
   secretInput.focus();
 });
 
-dashboardTab.addEventListener("click", () => setDashboardSection(false));
-templatesTab.addEventListener("click", () => setDashboardSection(true));
+dashboardTab.addEventListener("click", () => setDashboardSection("dashboard"));
+templatesTab.addEventListener("click", () => setDashboardSection("templates"));
+collaboratorsTab.addEventListener("click", () => setDashboardSection("collaborators"));
 
 async function postAction(action, value) {
   if (requestInFlight || !state) return;
@@ -376,6 +459,9 @@ document.querySelector("#reset-timer").addEventListener("click", () => {
 add10MinutesButton.addEventListener("click", () => postAction("add_time", 600));
 add30MinutesButton.addEventListener("click", () => postAction("add_time", 1800));
 add1HourButton.addEventListener("click", () => postAction("add_time", 3600));
+remove10MinutesButton.addEventListener("click", () => postAction("remove_time", 600));
+remove30MinutesButton.addEventListener("click", () => postAction("remove_time", 1800));
+remove1HourButton.addEventListener("click", () => postAction("remove_time", 3600));
 
 document.querySelector("#increment-mission").addEventListener("click", () => postAction("increment_mission"));
 document.querySelector("#decrement-mission").addEventListener("click", () => postAction("decrement_mission"));
@@ -483,6 +569,7 @@ function tick() {
 }
 
 renderTemplateOptions();
+renderCollaborators();
 
 if (secret) {
   selectedTemplateId = storedTemplateFor(secret);

@@ -31,6 +31,8 @@ const overlayUrl = document.querySelector("#overlay-url");
 const copyUrlButton = document.querySelector("#copy-url");
 const copyFeedback = document.querySelector("#copy-feedback");
 const connectionStatus = document.querySelector("#connection-status");
+const topbarSignal = document.querySelector("#topbar-signal");
+const topbarSignalText = document.querySelector("#topbar-signal-text");
 const timerDisplay = document.querySelector("#timer-title");
 const timerState = document.querySelector("#timer-state");
 const toggleTimerButton = document.querySelector("#toggle-timer");
@@ -383,11 +385,18 @@ async function loadCollaboratorAvatars() {
   }
 }
 
-function setConnectionStatus(connected) {
+function setConnectionStatus(connected, waitingForAccess = false) {
   connectionStatus.innerHTML = connected
     ? '<span class="status-dot"></span> CONECTADO'
     : '<span class="status-dot status-dot-off"></span> SEM CONEXÃO';
   connectionStatus.classList.toggle("is-offline", !connected);
+  const status = waitingForAccess ? "waiting" : connected ? "connected" : "offline";
+  topbarSignal.dataset.state = status;
+  topbarSignalText.textContent = waitingForAccess
+    ? "AGUARDANDO ACESSO"
+    : connected
+      ? "SINAL ESTÁVEL"
+      : "SEM CONEXÃO";
 }
 
 function render() {
@@ -493,6 +502,7 @@ document.querySelector("#disconnect-button").addEventListener("click", () => {
   secret = "";
   state = null;
   setConnected(false);
+  setConnectionStatus(false, true);
   secretInput.value = "";
   secretInput.focus();
 });
@@ -668,6 +678,7 @@ if (secret) {
   window.setInterval(syncState, SYNC_INTERVAL);
 } else {
   setConnected(false);
+  setConnectionStatus(false, true);
 }
 
 window.setInterval(tick, 1000);

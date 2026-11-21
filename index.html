@@ -4,21 +4,34 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101211">
-    <title>Vice City Overlay — Painel</title>
+    <title>Overlay GTA VI — cArthurDev | Painel</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body class="dashboard-page">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="Vice City Overlay, início">
-        <span class="brand-mark" aria-hidden="true">VC</span>
-        <span class="brand-name">VICE CITY <span>OVERLAY</span></span>
-      </a>
-      <span class="topbar-note">
-        <span class="status-dot"></span>
-        <span class="topbar-note-primary">ESTÚDIO VICE CITY</span>
-        <span class="topbar-divider">/</span>
-        <span class="topbar-note-secondary">SINAL DE CONTROLE</span>
-      </span>
+      <div class="topbar-inner">
+        <a class="brand" href="/" aria-label="Overlay GTA VI por cArthurDev, início">
+          <img class="brand-logo" src="/images/logo.png" alt="Overlay GTA VI">
+          <span class="brand-author">
+            <span>CRIADO POR</span>
+            <strong>cArthurDev</strong>
+          </span>
+        </a>
+        <div class="topbar-console">
+          <div class="topbar-channel">
+            <span class="topbar-meta-label">CANAL</span>
+            <strong>GTA VI <span>//</span> 01</strong>
+          </div>
+          <span class="topbar-console-divider" aria-hidden="true"></span>
+          <div id="topbar-signal" class="topbar-signal" data-state="waiting" role="status" aria-live="polite">
+            <span class="signal-meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="topbar-signal-copy">
+              <span class="topbar-meta-label">LINK DO PAINEL</span>
+              <strong id="topbar-signal-text">AGUARDANDO ACESSO</strong>
+            </span>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main class="dashboard-shell">

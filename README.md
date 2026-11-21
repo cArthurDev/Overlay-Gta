@@ -1,4 +1,4 @@
-# Vice City Overlay
+# Overlay GTA VI — cArthurDev
 
 Painel web e overlay transparente para controlar o contador de missões e o tempo total jogado durante uma transmissão. A overlay não mostra o tempo da sessão atual.
 
